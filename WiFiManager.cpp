@@ -11,6 +11,9 @@
  **************************************************************/
 
 #include "WiFiManager.h"
+#include "FS.h"
+
+#define HOSTNAME_FILENAME ".wifimanager-hostname"
 
 WiFiManagerParameter::WiFiManagerParameter(const char *custom) {
   _id = NULL;
@@ -292,6 +295,75 @@ uint8_t WiFiManager::waitForConnectResult() {
     }
     return status;
   }
+}
+
+boolean WiFiManager::haveSavedHostname() {
+  DEBUG_WM("Checking for saved hostname");
+
+  if (!SPIFFS.begin()) {
+    DEBUG_WM("Failed to initialize file system.");
+    ESP.reset();
+    return false;
+  }
+
+  return SPIFFS.exists(HOSTNAME_FILENAME);
+}
+
+String WiFiManager::getSavedHostname() {
+  DEBUG_WM("Reading saved hostname");
+
+  if (!SPIFFS.begin()) {
+    DEBUG_WM("Failed to initialize file system.");
+    ESP.reset();
+    return "";
+  }
+
+  if (SPIFFS.exists(HOSTNAME_FILENAME)) {
+    File file = SPIFFS.open(HOSTNAME_FILENAME, "r");
+    if (file) {
+      size_t size = file.size();
+      std::unique_ptr<char[]> buf(new char[size+1]);
+      file.readBytes(buf.get(), size);
+      buf[size] = 0;
+      file.close();
+      String hostname = buf.get();
+      DEBUG_WM(hostname);
+      return hostname;
+     }
+  }
+
+  DEBUG_WM("(none)");
+  return "";
+}
+
+void WiFiManager::setSavedHostname(String hostname) {
+  DEBUG_WM("Setting saved hostname");
+
+  if (!SPIFFS.begin()) {
+    DEBUG_WM("Failed to initialize file system.");
+    ESP.reset();
+    return;
+  }
+
+  File file = SPIFFS.open(HOSTNAME_FILENAME, "w");
+  if (!file) {
+    DEBUG_WM("Failed to open file for writing.");
+    ESP.reset();
+    return;
+  }
+  file.write((const uint8_t *)hostname.c_str(), hostname.length());
+  file.close();
+}
+
+void WiFiManager::clearSavedHostname() {
+ DEBUG_WM("Clearing saved hostname");
+
+ if (!SPIFFS.begin()) {
+   DEBUG_WM("Failed to initialize file system.");
+   return;
+ }
+
+ SPIFFS.remove(HOSTNAME_FILENAME);
 }
 
 void WiFiManager::startWPS() {

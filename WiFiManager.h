@@ -162,6 +162,11 @@ class WiFiManager
     int           connectWifi(String ssid, String pass);
     uint8_t       waitForConnectResult();
 
+    boolean       haveSavedHostname();
+    String        getSavedHostname();
+    void          setSavedHostname(String hostname);
+    void          clearSavedHostname();
+
     void          handleRoot(WifiManagerWebServerRequestType *request);
     void          handleWifi(WifiManagerWebServerRequestType *request, boolean scan);
     void          handleWifiSave(WifiManagerWebServerRequestType *request);
