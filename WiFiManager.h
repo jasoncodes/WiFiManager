@@ -38,7 +38,7 @@ const char WIFI_MANAGER_HTTP_SCRIPT[] PROGMEM          = "<script>function c(l){
 const char WIFI_MANAGER_HTTP_HEAD_END[] PROGMEM        = "</head><body><div style='text-align:left;display:inline-block;min-width:260px;'>";
 const char WIFI_MANAGER_HTTP_PORTAL_OPTIONS[] PROGMEM  = "<form action=\"/wifi\" method=\"get\"><button>Configure WiFi</button></form><br/><form action=\"/0wifi\" method=\"get\"><button>Configure WiFi (No Scan)</button></form><br/><form action=\"/i\" method=\"get\"><button>Info</button></form><br/><form action=\"/r\" method=\"post\"><button>Reset</button></form>";
 const char WIFI_MANAGER_HTTP_ITEM[] PROGMEM            = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
-const char WIFI_MANAGER_HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/>";
+const char WIFI_MANAGER_HTTP_FORM_START[] PROGMEM      = "<form method='get' action='wifisave'><input id='s' name='s' length=32 placeholder='SSID'><br/><input id='p' name='p' length=64 type='password' placeholder='password'><br/><input id='h' name='h' length=32 placeholder='hostname' autocapitalize='none'><br/>";
 const char WIFI_MANAGER_HTTP_FORM_PARAM[] PROGMEM      = "<br/><input id='{i}' name='{n}' length={l} placeholder='{p}' value='{v}' {c}>";
 const char WIFI_MANAGER_HTTP_FORM_END[] PROGMEM        = "<br/><button type='submit'>save</button></form>";
 const char WIFI_MANAGER_HTTP_SCAN_LINK[] PROGMEM       = "<br/><div class=\"c\"><a href=\"/wifi\">Scan</a></div>";
@@ -136,6 +136,7 @@ class WiFiManager
     const char*   _apPassword             = NULL;
     String        _ssid                   = "";
     String        _pass                   = "";
+    String        _hostname               = "";
     unsigned long _configPortalTimeout    = 0;
     unsigned long _connectTimeout         = 0;
     unsigned long _configPortalStart      = 0;
@@ -159,7 +160,7 @@ class WiFiManager
     //void          setEEPROMString(int start, int len, String string);
 
     int           status = WL_IDLE_STATUS;
-    int           connectWifi(String ssid, String pass);
+    int           connectWifi(String ssid, String pass, String hostname);
     uint8_t       waitForConnectResult();
 
     boolean       haveSavedHostname();

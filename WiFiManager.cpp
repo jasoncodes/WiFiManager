@@ -154,7 +154,7 @@ boolean WiFiManager::autoConnect(char const *apName, char const *apPassword) {
   // attempt to connect; should it fail, fall back to AP
   WiFi.mode(WIFI_STA);
 
-  if (connectWifi("", "") == WL_CONNECTED)   {
+  if (haveSavedHostname() && connectWifi("", "", getSavedHostname()) == WL_CONNECTED)   {
     DEBUG_WM(F("IP Address:"));
     DEBUG_WM(WiFi.localIP());
     //connected
@@ -198,10 +198,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
       DEBUG_WM(F("Connecting to new AP"));
 
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) {
+      if (connectWifi(_ssid, _pass, _hostname) != WL_CONNECTED) {
         DEBUG_WM(F("Failed to connect."));
       } else {
         //connected
+        setSavedHostname(_hostname);
         WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
         if ( _savecallback != NULL) {
@@ -231,7 +232,7 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
 }
 
 
-int WiFiManager::connectWifi(String ssid, String pass) {
+int WiFiManager::connectWifi(String ssid, String pass, String hostname) {
   DEBUG_WM(F("Connecting as wifi client..."));
 
   // check if we've got static_ip settings, if we do, use those.
@@ -245,6 +246,8 @@ int WiFiManager::connectWifi(String ssid, String pass) {
     DEBUG_WM("Already connected. Bailing out.");
     return WL_CONNECTED;
   }
+  // set hostname
+  WiFi.hostname(hostname);
   //check if we have ssid and pass and force those, if not, try with last saved values
   if (ssid != "") {
     WiFi.begin(ssid.c_str(), pass.c_str());
@@ -400,6 +403,7 @@ void WiFiManager::resetSettings() {
   DEBUG_WM(F("settings invalidated"));
   DEBUG_WM(F("THIS MAY CAUSE AP NOT TO START UP PROPERLY. YOU NEED TO COMMENT IT OUT AFTER ERASING THE DATA."));
   WiFi.disconnect(true);
+  clearSavedHostname();
   //delay(200);
 }
 void WiFiManager::setTimeout(unsigned long seconds) {
@@ -622,6 +626,7 @@ void WiFiManager::handleWifiSave(WifiManagerWebServerRequestType *request) {
   //SAVE/connect here
   _ssid = request->arg("s").c_str();
   _pass = request->arg("p").c_str();
+  _hostname = request->arg("h").c_str();
 
   //parameters
   for (int i = 0; i < _paramsCount; i++) {
