@@ -64,6 +64,9 @@ const char* WiFiManagerParameter::getCustomHTML() {
 }
 
 WiFiManager::WiFiManager() {
+  if (haveSavedHostname()) {
+    WiFi.hostname(getSavedHostname());
+  }
 }
 
 void WiFiManager::addParameter(WiFiManagerParameter *p) {
